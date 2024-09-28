@@ -41,7 +41,7 @@ const ParagraphStreamer = () => {
 
     setStreamedWords([]);
     setIsStreaming(true);
-    ws = new WebSocket("https://paragraph-streaming-ixqr.vercel.app/");
+    ws = new WebSocket("wss://paragraph-streaming-ixqr.vercel.app/");
 
     ws.onopen = () => {
       ws.send(inputText);

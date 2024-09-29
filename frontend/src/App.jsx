@@ -10,12 +10,9 @@ const ParagraphStreamer = () => {
     setInputText(e.target.value);
   };
 
-  const speakWord = async () => {
-    const text = inputText.trim(); // Trim the input text
-    console.log(text);
-
+  const speakWord = (word) => {
     if (!isSpeaking) {
-      const utterance = new SpeechSynthesisUtterance(text);
+      const utterance = new SpeechSynthesisUtterance(word);
       utterance.rate = 1;
       utterance.lang = "hi-IN";
 
@@ -23,15 +20,9 @@ const ParagraphStreamer = () => {
       utterance.onend = () => {
         setIsSpeaking(false);
       };
-      window.speechSynthesis.speak(utterance);
-    } else {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(false);
-    }
 
-    setTimeout(() => {
-      startStreaming();
-    }, 100);
+      window.speechSynthesis.speak(utterance);
+    }
   };
 
   const startStreaming = () => {
@@ -43,13 +34,17 @@ const ParagraphStreamer = () => {
 
     let wordIndex = 0;
 
-    // Function to stream words with a delay
+    // Function to stream words with a delay and speak them one by one
     const streamWord = () => {
       if (wordIndex < words.length) {
-        setStreamedWords((prevWords) => [...prevWords, words[wordIndex - 1]]);
-        wordIndex++;
+        const currentWord = words[wordIndex];
+        setStreamedWords((prevWords) => [...prevWords, currentWord]);
 
-        setTimeout(streamWord, 700); // Delay of 300ms before displaying the next word
+        // Speak the current word
+        speakWord(currentWord);
+
+        wordIndex++;
+        setTimeout(streamWord, 1500);
       } else {
         setIsStreaming(false);
       }
@@ -112,7 +107,7 @@ const ParagraphStreamer = () => {
           disabled={isStreaming}
         />
         <button
-          onClick={speakWord}
+          onClick={startStreaming}
           disabled={isStreaming}
           style={{
             backgroundColor: isStreaming ? "#007bff" : "#28a745",

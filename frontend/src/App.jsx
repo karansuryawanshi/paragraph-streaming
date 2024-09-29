@@ -6,14 +6,12 @@ const ParagraphStreamer = () => {
   const [isStreaming, setIsStreaming] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
 
-  let ws;
-
   const handleInputChange = (e) => {
     setInputText(e.target.value);
   };
 
   const speakWord = async () => {
-    const text = inputText;
+    const text = inputText.trim(); // Trim the input text
     console.log(text);
 
     if (!isSpeaking) {
@@ -36,33 +34,28 @@ const ParagraphStreamer = () => {
     }, 100);
   };
 
-  const startStreaming = (word) => {
+  const startStreaming = () => {
     if (!inputText.trim()) return;
 
+    const words = inputText.trim().split(/\s+/); // Split by whitespace
     setStreamedWords([]);
     setIsStreaming(true);
-    ws = new WebSocket("https://paragraph-streaming-ixqr.vercel.app/");
 
-    ws.onopen = () => {
-      ws.send(inputText);
-    };
+    let wordIndex = 0;
 
-    ws.onmessage = (event) => {
-      if (event.data === "END_STREAM") {
-        setIsStreaming(false);
-        ws.close();
+    // Function to stream words with a delay
+    const streamWord = () => {
+      if (wordIndex < words.length) {
+        setStreamedWords((prevWords) => [...prevWords, words[wordIndex - 1]]);
+        wordIndex++;
+
+        setTimeout(streamWord, 700); // Delay of 300ms before displaying the next word
       } else {
-        setStreamedWords((prevWords) => [...prevWords, event.data]);
+        setIsStreaming(false);
       }
     };
 
-    ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
-    };
-
-    ws.onclose = () => {
-      console.log("WebSocket connection closed");
-    };
+    streamWord(); // Start streaming words
   };
 
   return (

@@ -10,9 +10,13 @@ const ParagraphStreamer = () => {
     setInputText(e.target.value);
   };
 
-  const speakWord = (word) => {
+  const speakWord = async (word) => {
+    const text = inputText.trim();
+    console.log("new text", text);
+    console.log("isStreaming", startStreaming);
+
     if (!isSpeaking) {
-      const utterance = new SpeechSynthesisUtterance(word);
+      const utterance = new SpeechSynthesisUtterance(text);
       utterance.rate = 1;
       utterance.lang = "hi-IN";
 
@@ -20,37 +24,38 @@ const ParagraphStreamer = () => {
       utterance.onend = () => {
         setIsSpeaking(false);
       };
-
       window.speechSynthesis.speak(utterance);
+    } else {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
     }
+
+    setTimeout(() => {
+      startStreaming();
+    }, 900);
   };
 
   const startStreaming = () => {
     if (!inputText.trim()) return;
 
-    const words = inputText.trim().split(/\s+/); // Split by whitespace
+    const words = inputText.trim().split(/\s+/);
     setStreamedWords([]);
     setIsStreaming(true);
 
     let wordIndex = 0;
 
-    // Function to stream words with a delay and speak them one by one
     const streamWord = () => {
       if (wordIndex < words.length) {
-        const currentWord = words[wordIndex];
-        setStreamedWords((prevWords) => [...prevWords, currentWord]);
-
-        // Speak the current word
-        speakWord(currentWord);
-
+        setStreamedWords((prevWords) => [...prevWords, words[wordIndex - 1]]);
         wordIndex++;
-        setTimeout(streamWord, 1500);
+
+        setTimeout(streamWord, 300);
       } else {
         setIsStreaming(false);
       }
     };
 
-    streamWord(); // Start streaming words
+    streamWord();
   };
 
   return (
@@ -107,7 +112,7 @@ const ParagraphStreamer = () => {
           disabled={isStreaming}
         />
         <button
-          onClick={startStreaming}
+          onClick={speakWord}
           disabled={isStreaming}
           style={{
             backgroundColor: isStreaming ? "#007bff" : "#28a745",
